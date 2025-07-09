@@ -62,7 +62,7 @@ def load_data(filepath):
         st.error(f"Erro ao carregar ou processar o ficheiro: {e}")
         return pd.DataFrame()
 
-df = load_data("https://github.com/seu-usuario/seu-repo/raw/main/Indedutiveis.xlsx")
+df = load_data("https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fraw.githubusercontent.com%2FAlexandrePneuBras%2FAn-lise-Indedut-veis%2Frefs%2Fheads%2Fmain%2FIndedutiveis.xlsx&wdOrigin=BROWSELINK")
 
 if not df.empty:
     pio.templates.default = "plotly_white"
