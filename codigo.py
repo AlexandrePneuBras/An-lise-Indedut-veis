@@ -198,7 +198,7 @@ if not df.empty:
             else:
                 df_plot_data = top_filiais
             df_plot_data = df_plot_data.reset_index()
-            df_plot_data.columns = ['Descrição CR', 'Saldo']
+            df_plot_data.columns = ['Descrição CR', 'Saldo mês']
             fig_bar_filial = px.bar(df_plot_data.sort_values(by='Saldo mês', ascending=True), x='Saldo mês', y='Descrição CR', orientation='h', text='Saldo mês', color_continuous_scale=px.colors.sequential.Teal, color='Saldo mês')
             fig_bar_filial.update_traces(texttemplate='R$ %{text:,.2f}', textposition='outside')
             st.plotly_chart(fig_bar_filial, use_container_width=True)
