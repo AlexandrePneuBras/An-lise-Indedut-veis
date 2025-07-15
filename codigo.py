@@ -58,7 +58,7 @@ if not df.empty:
     # Análises e Gráficos
     st.header("Análise por Centro de Resultado (CR)")
 
-    saldo_por_cr = df.groupby('Descrição CR')['Saldo'].sum().reset_index().sort_values(by='Saldo', ascending=False)
+    saldo_por_cr = df.groupby('Descrição CR')['Saldo mês'].sum().reset_index().sort_values(by='Saldo mês', ascending=False)
     num_top_cr = st.slider("Selecione o número de Centros de Resultado (CR) para exibir:", 5, 20, 10)
     top_n_cr = saldo_por_cr.head(num_top_cr)
 
@@ -91,7 +91,7 @@ if not df.empty:
 
     st.header("Análise por Parceiro")
 
-    saldo_por_parceiro = df.groupby('Nome Parceiro')['Saldo'].sum().reset_index().sort_values(by='Saldo', ascending=False)
+    saldo_por_parceiro = df.groupby('Nome Parceiro')['Saldo mês'].sum().reset_index().sort_values(by='Saldo mês', ascending=False)
     num_top_parceiros = st.slider("Selecione o número de Parceiros para exibir:", 5, 20, 10)
     top_n_parceiros = saldo_por_parceiro.head(num_top_parceiros)
 
@@ -125,7 +125,7 @@ if not df.empty:
     st.header("Evolução Mensal do Saldo")
 
     num_top_cr_evolucao = st.slider("Selecione o número de Centros de Resultado (CR) para a evolução mensal:", 3, 10, 5)
-    top_cr_evolucao_nomes = df.groupby('Descrição CR')['Saldo'].sum().nlargest(num_top_cr_evolucao).index
+    top_cr_evolucao_nomes = df.groupby('Descrição CR')['Saldo mês'].sum().nlargest(num_top_cr_evolucao).index
     df_top_cr_evolucao = df[df['Descrição CR'].isin(top_cr_evolucao_nomes)]
     saldo_mensal_cr = df_top_cr_evolucao.groupby([pd.Grouper(key='Dt. Movimento', freq='M'), 'Descrição CR'])['Saldo mês'].sum().reset_index()
     saldo_mensal_cr['Dt. Movimento'] = saldo_mensal_cr['Dt. Movimento'].dt.strftime('%Y-%m')
