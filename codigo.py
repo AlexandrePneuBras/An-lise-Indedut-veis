@@ -40,13 +40,13 @@ def load_data(filepath):
         df['Nome do Mês'] = df['Dt. Movimento'].dt.strftime('%B')
 
         # Tratamento de colunas numéricas
-        for col in ['Saldo', 'Saldo Inicial']:
+        for col in ['Saldo mês', 'Saldo Inicial']:
             if col in df.columns:
                 if df[col].dtype == 'object':
                     df[col] = df[col].astype(str).str.replace('.', '', regex=False).str.replace(',', '.', regex=True)
                 df[col] = pd.to_numeric(df[col], errors='coerce')
 
-        df.dropna(subset=['Saldo', 'Saldo Inicial'], inplace=True)
+        df.dropna(subset=['Saldo mês', 'Saldo Inicial'], inplace=True)
 
         # Garantir que todas as colunas de filtro sejam do tipo string
         filter_cols = ['Descrição CR', 'Cód. CR', 'Tipo de Despesa', 'Grupo de Contas', 'Grupo Emp', 'Nome Parceiro']
@@ -160,25 +160,25 @@ if not df.empty:
     if not df_filtered.empty:
         st.markdown("### Resumo Geral")
         col1, col2, col3 = st.columns(3)
-        total_saldo = df_filtered['Saldo'].sum()
+        total_saldo = df_filtered['Saldo mês'].sum()
         num_registros = len(df_filtered)
-        media_saldo = df_filtered['Saldo'].mean()
+        media_saldo = df_filtered['Saldo mês'].mean()
         col1.metric(label="Total do Saldo", value=f"R$ {total_saldo:,.2f}")
         col2.metric(label="Número de Registros", value=f"{num_registros:,}")
         col3.metric(label="Saldo Médio por Registro", value=f"R$ {media_saldo:,.2f}")
 
         st.markdown("<hr>", unsafe_allow_html=True)
         st.header("Análise Temporal com Detalhe por Filial")
-        saldo_mensal_detalhado = df_filtered.groupby(['Mês/Ano', 'Descrição CR'])['Saldo'].sum().reset_index()
+        saldo_mensal_detalhado = df_filtered.groupby(['Mês/Ano', 'Descrição CR'])['Saldo mês'].sum().reset_index()
         hover_texts = {}
         for mes_ano in saldo_mensal_detalhado['Mês/Ano'].unique():
             top_filiais = saldo_mensal_detalhado[saldo_mensal_detalhado['Mês/Ano'] == mes_ano].nlargest(5, 'Saldo')
-            text = "<br>".join([f"{row['Descrição CR']}: R$ {row['Saldo']:,.2f}" for _, row in top_filiais.iterrows()])
+            text = "<br>".join([f"{row['Descrição CR']}: R$ {row['Saldo mês']:,.2f}" for _, row in top_filiais.iterrows()])
             hover_texts[mes_ano] = text
-        saldo_mensal_total = df_filtered.groupby('Mês/Ano')['Saldo'].sum().reset_index()
+        saldo_mensal_total = df_filtered.groupby('Mês/Ano')['Saldo mês'].sum().reset_index()
         saldo_mensal_total['Detalhe'] = saldo_mensal_total['Mês/Ano'].map(hover_texts).fillna('')
         saldo_mensal_total['Mês/Ano'] = saldo_mensal_total['Mês/Ano'].astype(str)
-        fig_temporal = px.line(saldo_mensal_total, x='Mês/Ano', y='Saldo', markers=True, title='Evolução Mensal do Saldo Total')
+        fig_temporal = px.line(saldo_mensal_total, x='Mês/Ano', y='Saldo mês', markers=True, title='Evolução Mensal do Saldo Total')
         fig_temporal.update_traces(customdata=saldo_mensal_total['Detalhe'], hovertemplate="<b>Mês</b>: %{x}<br><b>Saldo Total</b>: R$ %{y:,.2f}<br><br><b>Top 5 Filiais no Mês:</b><br>%{customdata}<extra></extra>")
         st.plotly_chart(fig_temporal, use_container_width=True)
 
@@ -188,7 +188,7 @@ if not df.empty:
 
         with col_part1:
             st.subheader("Por Filial")
-            saldo_por_filial = df_filtered.groupby('Descrição CR')['Saldo'].sum().sort_values(ascending=False)
+            saldo_por_filial = df_filtered.groupby('Descrição CR')['Saldo mês'].sum().sort_values(ascending=False)
             top_n = st.slider("Selecione o top N de filiais:", 3, min(20, len(saldo_por_filial) if len(saldo_por_filial) > 3 else 4), 7, key="slider_filial")
             top_filiais = saldo_por_filial.head(top_n)
             soma_outros = saldo_por_filial.tail(len(saldo_por_filial) - top_n).sum()
@@ -199,13 +199,13 @@ if not df.empty:
                 df_plot_data = top_filiais
             df_plot_data = df_plot_data.reset_index()
             df_plot_data.columns = ['Descrição CR', 'Saldo']
-            fig_bar_filial = px.bar(df_plot_data.sort_values(by='Saldo', ascending=True), x='Saldo', y='Descrição CR', orientation='h', text='Saldo', color_continuous_scale=px.colors.sequential.Teal, color='Saldo')
+            fig_bar_filial = px.bar(df_plot_data.sort_values(by='Saldo mês', ascending=True), x='Saldo mês', y='Descrição CR', orientation='h', text='Saldo mês', color_continuous_scale=px.colors.sequential.Teal, color='Saldo mês')
             fig_bar_filial.update_traces(texttemplate='R$ %{text:,.2f}', textposition='outside')
             st.plotly_chart(fig_bar_filial, use_container_width=True)
 
         with col_part2:
             st.subheader("Por Fornecedor")
-            saldo_por_parceiro = df_filtered.groupby('Nome Parceiro')['Saldo'].sum().sort_values(ascending=False)
+            saldo_por_parceiro = df_filtered.groupby('Nome Parceiro')['Saldo mês'].sum().sort_values(ascending=False)
             top_n_parceiro = st.slider("Selecione o top N de fornecedores:", 3, min(20, len(saldo_por_parceiro) if len(saldo_por_parceiro) > 3 else 4), 10, key="slider_parceiro")
             top_parceiros = saldo_por_parceiro.head(top_n_parceiro)
             soma_outros_p = saldo_por_parceiro.tail(len(saldo_por_parceiro) - top_n_parceiro).sum()
@@ -215,8 +215,8 @@ if not df.empty:
             else:
                 df_plot_parceiro = top_parceiros
             df_plot_parceiro = df_plot_parceiro.reset_index()
-            df_plot_parceiro.columns = ['Nome Parceiro', 'Saldo']
-            fig_bar_parceiro = px.bar(df_plot_parceiro.sort_values(by='Saldo', ascending=True), x='Saldo', y='Nome Parceiro', orientation='h', text='Saldo', color='Saldo', color_continuous_scale=px.colors.sequential.Plasma)
+            df_plot_parceiro.columns = ['Nome Parceiro', 'Saldo mês']
+            fig_bar_parceiro = px.bar(df_plot_parceiro.sort_values(by='Saldo mês', ascending=True), x='Saldo mês', y='Nome Parceiro', orientation='h', text='Saldo mês', color='Saldo mês', color_continuous_scale=px.colors.sequential.Plasma)
             fig_bar_parceiro.update_traces(texttemplate='R$ %{text:,.2f}', textposition='outside')
             st.plotly_chart(fig_bar_parceiro, use_container_width=True)
 
